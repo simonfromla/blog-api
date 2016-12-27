@@ -1,0 +1,19 @@
+h1 {
+    color: #777777;
+}
+
+/*gets rid of ugly margin in post_update_create.html*/
+.wmd-panel {
+    margin-left: 0px !important;
+    margin-left: 0px !important;
+}
+
+/*formats the date picker in post_update/create*/
+#id_publish_month, #id_publish_day, #id_publish_year {
+    display: inline-block;
+    width: auto;
+}
+
+.comment-reply {
+    display: none;
+}

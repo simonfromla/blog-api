@@ -1,0 +1,74 @@
+<!-- {% extends "base.html" %} -->
+{% block content %}
+
+
+<div class='col-sm-6 col-sm-offset-3'>
+    <h1>{{ title }}</h1>
+<form method='GET' action='' class="row">
+    <div class="col-sm-6"> <!-- If above row^ absent, bst would render this col as a sub-col.  -->
+        <div class="input-group" >
+            <input class="form-control" type='text' name='q' placeholder='Search posts' value='{{ request.GET.q }}'/>
+            <span class="input-group-btn">
+                <input class='btn btn-default' type='submit' value='Search' />
+            </span>
+        </div>
+    </div>
+</form>
+{% for obj in object_list %}
+<div class="row">
+  <div class="col-sm-12">
+    <div class="thumbnail">
+        {% if obj.image %}
+         <img src='{{ obj.image.url }}' class='img-responsive' />
+        {% endif %}
+      <div class="caption post_detail_item">
+        {% if obj.draft %}<h3>Staff only: Draft</h3>{% endif %} {% if obj.publish > today %}<h3>Staff Only: Future Post</h3>{% endif %}
+        <h3><a href='{{ obj.get_absolute_url }}'>{{ obj.title }}</a> <small>{{ obj.publish }}</small></h3>
+        {% if obj.user.get_full_name %}<p>Author: {{ obj.user.get_full_name }}</p>{% endif %}
+
+<!--         Here, adding class of content-markdown, to render markdown in the post
+        preview in post_list. The function that acts on the class of
+        content-markdown first defined w/ jQuery in base.html. -->
+<!--             Removing the template tag, truncatechars:100, in order to make the image
+        responsive in post_list view. Need solution for truncateing... -->
+<!--             Removing class of .content-markdown from <p> in order to test out get_markdown -->
+<!--     The following template tag, .get_markdown, alone, would turn the content into html.
+    the 'safe' tag filter renders the html.  see: {{ obj.get_markdown | safe}}
+    However, even better would be to have the markdown automagically be safe, always.
+    Although 'safe' renders it safe through the template, is not being *saved* that way in the Form.-->
+    <!-- SO, go back to the model, and use safestring's mark_safe on top of .get_markdown
+    in order to keep safe html without the need for the |safe template tag/filter -->
+        {{ obj.get_markdown|truncatechars_html:80 }}
+        <!-- THIS^ used to be: <p class="content-markdown">{{ obj.content|truncatechars:100 }}</p> -->
+        <!-- Instead of using obj.content + filters + <p> classes, we are now using a single instance method -->
+        <p><a href="{{ obj.get_absolute_url }}" class="btn btn-primary" role="button">View</a></p>
+      </div>
+    </div>
+  </div>
+<hr/>
+</div>
+{% endfor %}
+
+
+<div class="pagination">
+    <span class="step-links">
+        {% if object_list.has_previous %}
+            <a href="?{{ page_request_var }}={{ object_list.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ object_list.number }} of {{ object_list.paginator.num_pages }}.
+        </span>
+
+        {% if object_list.has_next %}
+            <a href="?{{ page_request_var }}={{ object_list.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">next</a>
+        {% endif %}
+    </span>
+</div>
+
+
+
+
+</div>
+
+{% endblock content %}

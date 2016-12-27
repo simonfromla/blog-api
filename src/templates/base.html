@@ -1,0 +1,124 @@
+{% load staticfiles %}
+<!--DOCTYPE html -->
+<html>
+<head>
+<title>{% block head_title %}Try Django 1.9{% endblock head_title %}</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+
+<link rel='stylesheet' href='{% static "css/base.css" %}' />
+<style>
+{% block style %}{% endblock style %}
+</style>
+
+<!-- Input extra block in the head for the pagedown widget -->
+{% block head_extra %}{% endblock head_extra %}
+
+</head>
+<body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+var js, fjs = d.getElementsByTagName(s)[0];
+if (d.getElementById(id)) return;
+js = d.createElement(s); js.id = id;
+js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5";
+fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+{% include "messages_display.html" %}
+<div class='container'>
+
+<!-- Breadcrumb nav.  -->
+    <ol class="breadcrumb">
+        <li><a href="{% url 'posts:list' %}">Home</a></li>
+        <!-- This part of the nav to be changed depending on the page being viewed using blocktags.
+        See: post_detail.html for example -->
+        {% block post_detail_link %}
+        {% endblock %}
+
+        {% if not request.user.is_authenticated %}
+        <li class="pull-right"><a href="{% url 'register' %}">Register</a></li>
+        <li class="pull-right"><a href="{% url 'login' %}">Login</a></li>
+        {% else %}
+        <li class="pull-right"><a href="{% url 'logout' %}">Logout</a></li>
+        {% endif %}
+    </ol>
+{% block content %}{% endblock content %}
+</div>
+
+
+
+<!-- Latest compiled and minified JavaScript -->
+<script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.6/marked.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        //for every item in there with class of .content-markdown, go through each of them
+        $(".content-markdown").each(function() {
+            //grab the text of each item and put into content var.
+            var content = $(this).text()
+            //use the 'marked' function from the marked library to turn it into markdown
+            var markedContent = marked(content)
+            $(this).html(markedContent)
+        })
+
+        //target all img related to, or child elements of ___.
+        //add bootstrap's class of img-responsive.
+        $(".post_detail_item img").each(function() {
+            $(this).addClass('img-responsive')
+        })
+    })
+
+    // Dynamic rendering of the preview ADV #8
+    // For dynamic rendering, need to associate content with the content preview
+    // when django makes forms, names them based on form field name. SO,
+    // obtain class names from content side to copy into preview side
+
+
+    var titleItem = $("#id_title");
+    $("#preview-title").text(titleItem.val())
+
+    var contentInput = $("#id_content");
+
+    function setContent(value) {
+        var markedContent = marked(value)
+        $("#preview-content").html(markedContent)
+        $("#preview-content img").each(function() {
+            $(this).addClass("img-responsive")
+        })
+    }
+    setContent(contentInput.val())
+
+    contentInput.keyup(function(){
+        var newContent = $(this).val()
+        setContent(newContent)
+    })
+    var titleInput = $("#id_title");
+
+    function setTitle(value) {
+        $("#preview-title").text(value)
+    }
+    setTitle(titleInput.val())
+    titleInput.keyup(function(){
+        var newContent = $(this).val()
+        setTitle(newContent)
+    })
+
+    $(".comment-reply-btn").click(function(event) {
+        event.preventDefault();
+        $(this).parent().next(".comment-reply").fadeToggle();
+    })
+</script>
+
+</body>
+</html>

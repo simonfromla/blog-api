@@ -1,4 +1,6 @@
 src/blog/settings
+src/posts/migrations
+src/comments/migrations
 static_cdn/
 media_cdn/
 bin/

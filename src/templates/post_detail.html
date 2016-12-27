@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load urlify %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}
+{{ instance.title }} | {{ block.super }}
+{% endblock head_title %}
+
+<!-- Breadcrumb nav. See: base.html for more -->
+{% block post_detail_link %}
+<li><a href="{{instance.get_absolute_url}}"> {{instance.title}}</a></li>
+{% endblock %}
+
+{% block content %}
+<div class='col-sm-6 col-sm-offset-3'>
+    {% if instance.image %}
+    <img src='{{ instance.image.url }}' class='img-responsive' />
+    {% endif %}
+<h1>{{ title }} <small>{% if instance.draft %}<span style='color:red;'>Draft</span> {% endif %}{{ instance.publish }}</small></h1>
+
+<!-- Instead of all this noise, rethink how you'd set up the model field instead. See: class Post read_time field: from
+TimeField -> IntegerField
+Since changing to IntField, also change  the utils function to return an Integer in minutes. Then return here to change how its rendered -->
+<p>Read time:
+<!-- {% if instance.read_time|time:"i" <= "01" %}
+    < 1 minute {% elif instance.read_time|time:"i" <= "10" %} < 10 minutes
+{% else %}{{instance.read_time|time:"i" }} minutes {% endif %} -->
+{{ instance.read_time }} minute{% if instance.read_time > 1 %}s{% endif %}
+<!-- {% if instance.read_time <= 1 %} < 1 minute {% else %}{{ instance.read_time }} minutes {% endif %} -->
+</p>
+{% if instance.user.get_full_name %}
+<p>Author: {{ instance.user.get_full_name }}</p>
+{% endif %}
+
+<p><div class="fb-like" data-href="{{ request.build_absolute_uri }}" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true"></div>
+<hr/>
+</p>
+
+<!-- <p>
+<a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}">
+Facebook
+</a>
+
+<a href="https://twitter.com/home?status={{ instance.content|truncatechars:80|urlify }}%20{{ request.build_absolute_uri }}">
+Twitter
+</a>
+
+<a href='https://plus.google.com/share?url={{ request.build_absolute_uri }}'>
+
+
+<a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ instance.title }}&summary={{ share_string }}&source={{ request.build_absolute_uri }}">
+Linkedin
+</a>
+
+<a href="http://www.reddit.com/submit?url={{ request.build_absolute_uri }}&title={{ share_string }}.">Reddit</a>
+
+</p> -->
+<div class='row'>
+<div class='col-sm-12'>
+
+<!-- Adding important! class of .content-markdown--This class is manipulated in
+base.html w/ jQuery. Again in post_list.html -->
+<!-- Deleting! ^above class of content-markdown since now using instance method of .get_markdown
+to render markdown instead. Using class of post_detail_item to add the image responsiveness--
+see: base.html -->
+    <div class="post_detail_item">{{ instance.get_markdown }}</div>
+
+
+<hr/>
+<br/>
+<div>
+    <p class="lead">Comments</p>
+    <!-- Hides the comment form from non-authenticated visitors -->
+    {% if request.user.is_authenticated %}
+    <!-- Wrap the form you initialized in form tags+token+buttons etc. -->
+    <form method="POST" action="."> {% csrf_token %}
+    <!-- This comment_form is the form coming in from views.post_detail -->
+        {{ comment_form|crispy }}
+        <input type='submit' value='Post comment' class='btn btn-default'>
+    </form>
+    {% else %}
+    <p>Please login to comment</p>
+    {% endif %}
+    <hr/>
+
+
+<!-- #All comments section -->
+    {% for comment in comments %}
+    <!-- {{ comments.content_object.get_markdown }} is the same as ^ {{instance.get_markdown}}
+    *note: use of content_object -->
+<!-- Each of these comments can be their own comments, or a reply to a comment. If reply, need a parent_id identify its parent -->
+    <blockquote>
+    <!-- This is THE actual comment, displaying the contents -->
+        <p>{{ comment.content }}</p>
+        <footer>via {{comment.user}} | {{comment.timestamp|timesince}} ago | {% if comment.children.count > 0 %} {{comment.children.count}} Comment{% if comment.children.count > 1 %}s{% endif %} | {% endif %}<a href="#" class="comment-reply-btn">Reply</a> | <a href="{{ comment.get_absolute_url }}" >Thread</a></footer>
+
+        <div class="comment-reply">
+            <!-- This is the child comment -->
+            {% for child_comment in comment.children %}
+                <blockquote>
+                    <p>{{ child_comment.content }}</p>
+                    <footer>via {{child_comment.user}} | {{child_comment.timestamp|timesince}} ago</footer>
+                </blockquote>
+            {% endfor %}
+        </div>
+
+        <!-- Hides the comment form from non-authenticated visitors -->
+        {% if request.user.is_authenticated %}
+    <!-- This is a form to create a child comment/reply to the above comment^ -->
+        <form method="POST" action="."> {% csrf_token %}
+            {{ comment_form|crispy }}
+    <!-- This input makes this a reply. Associates to a parent.  -->
+    <!-- Now need to reference this v parent_id inside of view. See: views.post_detail.form.is_valid()-->
+            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+            <input type='submit' value='Reply' class='btn btn-default'>
+        </form>
+        {% else %}
+        <p>Please login to comment</p>
+        {% endif %}
+
+
+
+    </blockquote>
+    <hr>
+    {% endfor %}
+    <!--Comment app--Template method__
+     {{instance.comment_set.all}} -->
+</div>
+<!-- Original FB comment section
+<div class="fb-comments" data-href="{{ request.build_absolute_uri }}" data-numposts="5"></div> -->
+
+</div>
+</div>
+</div>
+
+
+{% endblock content %}
