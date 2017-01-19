@@ -32,7 +32,7 @@ urlpatterns = [
         #The following url is the 'homepage' as it has nothing in regex.
         #Must go at the bottom of this list, due to search order. (See more info)
     url(r'^', include("posts.urls", namespace='posts')),
-
+    url(r'^api/posts/', include("posts.api.urls", namespace='posts-api')),
 ]
 
 if settings.DEBUG:

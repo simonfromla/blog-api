@@ -1,4 +1,5 @@
 src/blog/settings
+src/blog/db.sqlite3
 src/posts/migrations
 src/comments/migrations
 static_cdn/
@@ -7,6 +8,7 @@ bin/
 include/
 lib/
 pip-selfcheck.json
+src/notes.txt
 
 
 # Byte-compiled / optimized / DLL files
