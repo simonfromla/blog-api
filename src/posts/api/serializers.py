@@ -36,6 +36,7 @@ class PostListSerializer(ModelSerializer):
             'content',
             'publish',
             'id',
+            'user',
             ]
 
 
