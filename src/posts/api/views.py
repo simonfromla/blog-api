@@ -1,3 +1,7 @@
+from django.db.models import Q
+from rest_framework.filters import (
+    SearchFilter, OrderingFilter
+    )
 from rest_framework.generics import (
     CreateAPIView,
     DestroyAPIView,
@@ -44,8 +48,21 @@ class PostDetailAPIView(RetrieveAPIView):
     # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
 
 class PostListAPIView(ListAPIView):
-    queryset = Post.objects.all()
     serializer_class = PostListSerializer
+    #DRF built in search
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['title', 'content', 'user__first_name']
+    def get_queryset(self, *args, **kwargs):
+        queryset_list = Post.objects.all()
+        query = self.request.GET.get("q")
+        if query:
+            queryset_list = queryset_list.filter(
+                    Q(title__icontains=query)|
+                    Q(content__icontains=query)|
+                    Q(user__first_name__icontains=query) |
+                    Q(user__last_name__icontains=query)
+                    ).distinct()
+        return queryset_list
 
 class PostUpdateAPIView(RetrieveUpdateAPIView):
     queryset = Post.objects.all()
