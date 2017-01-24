@@ -33,6 +33,7 @@ urlpatterns = [
         #Must go at the bottom of this list, due to search order. (See more info)
     url(r'^', include("posts.urls", namespace='posts')),
     url(r'^api/posts/', include("posts.api.urls", namespace='posts-api')),
+    url(r'^api/comments/', include("comments.api.urls", namespace='comments-api')),
 ]
 
 if settings.DEBUG:
