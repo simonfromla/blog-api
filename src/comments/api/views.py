@@ -25,6 +25,7 @@ from posts.api.permissions import IsOwnerOrReadOnly
 from comments.models import Comment
 from .serializers import (
     # CommentCreateUpdateAPIView,
+    CommentDetailSerializer,
     CommentSerializer,
     )
 
@@ -44,8 +45,8 @@ from .serializers import (
 
 class CommentDetailAPIView(RetrieveAPIView):
     queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    # lookup_field = 'slug'
+    serializer_class = CommentDetailSerializer
+    lookup_field = 'pk'
     # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
 
 class CommentListAPIView(ListAPIView):
