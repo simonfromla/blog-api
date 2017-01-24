@@ -24,19 +24,18 @@ from posts.api.permissions import IsOwnerOrReadOnly
 
 from comments.models import Comment
 from .serializers import (
-    CommentCreateUpdateAPIView,
-    CommentDetailSerializer,
-    CommentListSerializer,
+    # CommentCreateUpdateAPIView,
+    CommentSerializer,
     )
 
 
-class CommentCreateUpdateAPIView(CreateAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentCreateUpdateAPIView
-    permission_classes = [IsAuthenticated]
+# class CommentCreateUpdateAPIView(CreateAPIView):
+#     queryset = Comment.objects.all()
+#     serializer_class = CommentCreateUpdateAPIView
+#     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
 
 # class CommentDeleteAPIView(DestroyAPIView):
 #     queryset = Comment.objects.all()
@@ -45,12 +44,12 @@ class CommentCreateUpdateAPIView(CreateAPIView):
 
 class CommentDetailAPIView(RetrieveAPIView):
     queryset = Comment.objects.all()
-    serializer_class = CommentDetailSerializer
-    lookup_field = 'slug'
+    serializer_class = CommentSerializer
+    # lookup_field = 'slug'
     # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
 
 class CommentListAPIView(ListAPIView):
-    serializer_class = CommentListSerializer
+    serializer_class = CommentSerializer
     #DRF built in search
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['content', 'user__first_name']
