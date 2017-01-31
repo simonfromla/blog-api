@@ -24,24 +24,29 @@ from posts.api.permissions import IsOwnerOrReadOnly
 
 from comments.models import Comment
 from .serializers import (
-    # CommentCreateUpdateAPIView,
     CommentDetailSerializer,
     CommentSerializer,
+    create_comment_serializer,
     )
 
 
-# class CommentCreateUpdateAPIView(CreateAPIView):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentCreateUpdateAPIView
-#     permission_classes = [IsAuthenticated]
+class CommentCreateAPIView(CreateAPIView):
+    queryset = Comment.objects.all()
+    # serializer_class = CommentCreateSerializer
+    permission_classes = [IsAuthenticated]
 
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
+    def get_serializer_class(self):
+        model_type = self.request.GET.get('type')
+        slug = self.request.GET.get('slug')
+        parent_id = self.request.GET.get('parent_id', None)
+        return create_comment_serializer(
+                model_type=model_type,
+                slug=slug,
+                parent_id=parent_id,
+                user=self.request.user,
+                )
 
-# class CommentDeleteAPIView(DestroyAPIView):
-#     queryset = Comment.objects.all()
-#     lookup_field = 'slug'
-#     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
 
 class CommentDetailAPIView(RetrieveAPIView):
     queryset = Comment.objects.all()
