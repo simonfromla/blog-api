@@ -32,7 +32,7 @@ def create_comment_serializer(model_type='post', slug=None, parent_id=None, user
                     self.parent_obj = parent_qs.first()
             return super(CommentCreateSerializer, self).__init__(*args, **kwargs)
 
-        def validate(self, data):
+        def validate(self, data): # Object level validation
             model_type = self.model_type
             model_qs = ContentType.objects.filter(model=model_type)
             if not model_qs.exists() or model_qs.count() != 1:
@@ -113,3 +113,14 @@ class CommentDetailSerializer(ModelSerializer):
         if obj.is_parent:
             return obj.children().count()
         return 0
+
+class CommentEditSerializer(ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields =  [
+            'content',
+            'id',
+            'timestamp',
+            ]
+

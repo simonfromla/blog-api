@@ -2,6 +2,8 @@ from django.db.models import Q
 from rest_framework.filters import (
     SearchFilter, OrderingFilter
     )
+from rest_framework.mixins import DestroyModelMixin, UpdateModelMixin
+
 from rest_framework.generics import (
     CreateAPIView,
     DestroyAPIView,
@@ -25,6 +27,7 @@ from posts.api.permissions import IsOwnerOrReadOnly
 from comments.models import Comment
 from .serializers import (
     CommentDetailSerializer,
+    CommentEditSerializer,
     CommentSerializer,
     create_comment_serializer,
     )
@@ -53,6 +56,20 @@ class CommentDetailAPIView(RetrieveAPIView):
     serializer_class = CommentDetailSerializer
     lookup_field = 'pk'
     # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
+    # def put(self, request, *args, **kwargs):
+    #     return self.update(request, *args, **kwargs)
+
+class CommentEditAPIView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
+    queryset = Comment.objects.filter(id__gte=0)
+    serializer_class = CommentEditSerializer
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
 
 class CommentListAPIView(ListAPIView):
     serializer_class = CommentSerializer
