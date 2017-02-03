@@ -24,7 +24,7 @@ from .permissions import IsOwnerOrReadOnly
 
 from posts.models import Post
 from .serializers import (
-    PostCreateUpdateAPIView,
+    PostCreateUpdateSerializer,
     PostDetailSerializer,
     PostListSerializer,
     )
@@ -32,7 +32,7 @@ from .serializers import (
 
 class PostCreateAPIView(CreateAPIView):
     queryset = Post.objects.all()
-    serializer_class = PostCreateUpdateAPIView
+    serializer_class = PostCreateUpdateSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -71,8 +71,9 @@ class PostListAPIView(ListAPIView):
         return queryset_list
 
 class PostUpdateAPIView(RetrieveUpdateAPIView):
+    # Only update-able by the post owner. Else, ReadOnly
     queryset = Post.objects.all()
-    serializer_class = PostCreateUpdateAPIView
+    serializer_class = PostCreateUpdateSerializer
     lookup_field = 'slug'
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 

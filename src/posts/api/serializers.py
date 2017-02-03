@@ -10,7 +10,7 @@ from rest_framework.serializers import (
 from posts.models import Post
 
 
-class PostCreateUpdateAPIView(ModelSerializer):
+class PostCreateUpdateSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields =  [
