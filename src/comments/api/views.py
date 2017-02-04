@@ -27,7 +27,6 @@ from posts.api.permissions import IsOwnerOrReadOnly
 from comments.models import Comment
 from .serializers import (
     CommentDetailSerializer,
-    CommentEditSerializer,
     CommentSerializer,
     create_comment_serializer,
     )
@@ -51,17 +50,18 @@ class CommentCreateAPIView(CreateAPIView):
 
 
 
-class CommentDetailAPIView(RetrieveAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentDetailSerializer
-    lookup_field = 'pk'
-    # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
-    # def put(self, request, *args, **kwargs):
-    #     return self.update(request, *args, **kwargs)
+# class CommentEditAPIView(RetrieveAPIView):
+#     queryset = Comment.objects.all() # This '.all()' was changed by model manager to be only parent comments
+#     serializer_class = CommentDetailSerializer
+#     lookup_field = 'pk'
+#     # lookup_url_kwarg = 'abc' # using 'slug' in the url vs. abc.
+#     # def put(self, request, *args, **kwargs):
+#     #     return self.update(request, *args, **kwargs)
 
-class CommentEditAPIView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
-    queryset = Comment.objects.filter(id__gte=0)
-    serializer_class = CommentEditSerializer
+class CommentDetailAPIView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
+    queryset = Comment.objects.filter(id__gte=0) # id__gte=0 will filter to be "true all"
+    serializer_class = CommentDetailSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
