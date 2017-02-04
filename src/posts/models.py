@@ -68,6 +68,9 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse("posts:detail", kwargs={"slug": self.slug})
 
+    def get_api_url(self):
+        return reverse("posts-api:detail", kwargs={"slug": self.slug})
+
 # Content is written in whatever the hell you want. Preferably, using markdown syntax
 # markdown(content) will turn that text, including all markdown in it, into HTML.
 # mark_safe will render that HTML.
