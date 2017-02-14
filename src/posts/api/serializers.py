@@ -7,6 +7,8 @@ from rest_framework.serializers import (
     SerializerMethodField,
     )
 
+from accounts.api.serializers import UserDetailSerializer
+
 from posts.models import Post
 
 
@@ -27,11 +29,18 @@ post_detail_url = HyperlinkedIdentityField(
         )
 
 class PostDetailSerializer(ModelSerializer):
-    comments =SerializerMethodField()
-    url = post_detail_url
-    user = SerializerMethodField()
-    # image = SerializerMethodField()
+    comments = SerializerMethodField()
     html = SerializerMethodField()
+    # image = SerializerMethodField()
+    url = post_detail_url
+    user = UserDetailSerializer(read_only=True)
+    """
+    Using the UserDetailSerializer(read_only=True)(a serializer inside a serializer)
+     vs. SerializerMethodField()
+    If needed, make changes to the UserDetailSerializer for easier large-scale
+    changes, as opposed to dealing with individual MethodField()
+    """
+    # user = SerializerMethodField()
 
     class Meta:
         model = Post
@@ -52,21 +61,24 @@ class PostDetailSerializer(ModelSerializer):
         comments = CommentSerializer(c_qs, many=True).data
         return comments
 
-    def get_user(self, obj):
-        return str(obj.user.username)
+    def get_html(self, obj):
+        return obj.get_markdown()
+
     # def get_image(self, obj):
     #     try:
     #         image = obj.image.url
     #     except:
     #         image = None
     #     return image
-    def get_html(self, obj):
-        return obj.get_markdown()
+
+    # def get_user(self, obj):
+    #     return str(obj.user.username)
 
 
 class PostListSerializer(ModelSerializer):
     url = post_detail_url
-    user = SerializerMethodField()
+    user = UserDetailSerializer(read_only=True)
+    # user = SerializerMethodField()
     class Meta:
         model = Post
         fields =  [
@@ -78,8 +90,8 @@ class PostListSerializer(ModelSerializer):
             'id',
             'user',
             ]
-    def get_user(self, obj):
-        return str(obj.user.username)
+    # def get_user(self, obj):
+        # return str(obj.user.username)
 
 
 """
@@ -96,6 +108,4 @@ data = {
 obj = Post.objects.get(id=2)
 new_item = PostDetailSerializer(obj, data=data)
 
-
-[description]
 """

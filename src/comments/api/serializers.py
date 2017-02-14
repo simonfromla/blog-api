@@ -8,6 +8,8 @@ from rest_framework.serializers import (
     ValidationError,
     )
 
+from accounts.api.serializers import UserDetailSerializer
+
 from comments.models import Comment
 
 User = get_user_model
@@ -102,15 +104,18 @@ class CommentSerializer(ModelSerializer):
         return 0
 
 class CommentChildSerializer(ModelSerializer):
+    user = UserDetailSerializer(read_only=True)#read_only to rid of default ability to update data
     class Meta:
         model = Comment
         fields =  [
             'content',
+            'user',
             'id',
             'timestamp',
             ]
 
 class CommentDetailSerializer(ModelSerializer):
+    user = UserDetailSerializer(read_only=True)
     replies = SerializerMethodField()
     reply_count = SerializerMethodField()
     content_object_url = SerializerMethodField()
@@ -118,6 +123,7 @@ class CommentDetailSerializer(ModelSerializer):
         model = Comment
         fields =  [
             'content',
+            'user',
             # 'content_type',
             # 'object_id',
             'id',
