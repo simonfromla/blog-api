@@ -1,0 +1,184 @@
+"""
+Blog-API notes
+
+DRF
+What it does:
+Turn regular data flow from models into JSON objects.
+    when changing model or creating, send JSON, when retrieving, get back JSON
+Has browsable API courtesy of DRF, raw json @ <api endpoint>/?format=json
+
+
+Install:
+'pip install '
+Add 'rest_framework' to 'INSTALLED_APPS'
+Create API module within each app. (stylistic decision)
+    separates API from reg. django project
+"""
+
+
+"""
+Serializers:
+    Allow project to work w data in specific way.
+    turn data into JSON, uses validation similar to forms
+
+    Implementation:
+Create a serializers.py (format will be similiar to forms.py)
+Import the serializer from DRF, as well as the model to serialize
+e.g. class PostCreateUpdateAPIView(ModelSerializer):
+    class Meta:
+        model = Post
+        fields =  []
+
+Import the serializer into the view, and create a serializer_class attribute based on the new serializer.
+*don't duplicate serializers if you don't need duplicates..
+"""
+
+
+# Serializing Objects:
+from __ import model_name
+from __ import serializer
+
+>>>obj = Post.objects.first()
+>>>print(obj)
+Another post title #(the unicode vs..)
+>>>obj
+<Post: Another post title> #(the Post instance)
+>>>obj.title
+'My title'
+
+    # Serializing the data:
+# Pass the instance of the model to the serializer
+>>>obj_data = PostSerializer(obj)
+>>>obj_data.data
+{'content': 'some content', 'title': 'My title',}
+
+**NOTE**
+At this point, after passing the instance to the serializer, we've simply translated the model instance into Python native datatypes. Which is why we can call .data on it.
+To 'finalise' serialization, you can render the data into JSON by using JSONRenderer().
+However, it seems, for most of your intents and purposes(simply displaying the data onto the graphical API), it is unneccesary. 'return'ing
+    CommentChildSerializer(obj.children()).data or PostSerializer(obj).data
+*seems* to work in most of your use-cases, currently.
+****
+
+ # Can work like a python dict. although JSON data
+>>>obj_data.data['content']
+'some content'
+
+
+    # Creating data with the Detail serializer:
+# Let's say there is raw data--
+>>>dataNew = {
+    'content': 'new contentt',
+}
+>>>new_item = PostDetailSerializer(data=dataNew) # data is KWARG
+>>>new_item.data
+AssertionError: need to call .is_valid() first or .initial_data
+>>>new_item.initial_data
+{'content': 'new contentt'}
+
+# If you tried:
+>>>if new_item.is_valid():
+        new_item.save()
+>>>else:
+        print(new_item.errors)
+# Error will be returned. Since new_item(dataNew) does not have all the fields--has 'content', missing 'title'
+
+# Serializer *Creating* Summary:
+    # Error returned if the data being sent/serialized does not have all the fields specified in the serializers.py serializer class
+    # The data being save()'ed does not become an object itself. Rather, a PostSerialized object (serialized data). Therefore, it will not have an 'id' like your other Django objects.
+
+"""
+- If you wanted your DetailView to look different from your ListView,
+make those differences in serializers.py
+
+- The lookup_field for the API views default to the PK.
+If want to change to slug, specify lookup_field in the view.
+"""
+
+# Serializer *Updating* summary:
+    # Essentially same as creating with Detail serializer, but
+  #  obj = Post.objects.get(id=2) #get the object to update
+  #  new_item = PostDetailSerializer(obj, data=data) #pass the object as first arg, and data as second to update the data
+
+"""
+*Class-based views require *self*.request.<>
+
+Creating and Updating work similarly in the browsable API
+Reduce Create serializer and Update serializer into one CreateUpdateAPIview serializer. *This app's* serializer does not need 'slug' or 'id' fields. Since 'id' and 'slug' should not be changed during an update, and since 'slug' should be based off of title and auto-generated thanks to your pre-save-post-receiver function in your posts.models
+
+In order to associate the object saving/creating user to the appropriate user,
+use the perform_create/perform_update function.
+If wish to track these new users, can do here with email using Django's
+send_email to notify you of update.
+Can also achieve same in the Post model itself. (e.g. editor, last update)
+"""
+
+"""
+
+=Permissions=
+"Determines whether a request should be granted or denied access" different classes of users to different parts of the API.
+Can be set on a per-view or per-viewset basis,
+    e.g. permission_classes = [IsAuthenticatedOrReadOnly]
+DRF permissions vs. overriding permissions.BasePermission for your custom permissions
+
+
+=Pagination=
+Method 1: Default Pagination--
+
+    from rest_framework.pagination import LimitOffsetPagination
+
+and under the generic API view, set the pagination_class to desired import. e.g.
+
+    pagination_class = LimitOffsetPagination
+
+Method 2: Custom Pagination--
+Create a pagination.py, import pagination classes. Set custom attributes e.g.
+    class PostLimitOffsetPagination(LimitOffsetPagination):
+        default = 2
+        max_limit = 10
+Import the class into the your views and set the pagination_class to the custom pagination.
+
+
+=HyperlinkedIdentityField=
+Set a 'url' attribute under the appropriate serializer class.
+    url = HyperlinkedIdentityField(
+        view_name='url_namespace:url_name',
+        lookup_field='slug')
+Then add 'url' as a Meta field
+
+
+=SerializerMethodField=
+Calls a method on the serializer class it is attached to, to receive a value.
+This value can be used to add any data to the serialized repres. of the object.
+See: def get_user under PostListSerializer
+DD: Allows serializing of all sorts of things you have in the model.
+    e.g get_markdown function, readtime, etc.
+
+
+"""
+
+"""
+See: comments/api/serializers.py - create_comment_serializer
+B/c Comment model is 'pluggable', uses GFK, can't serialize as easily as Post model.
+Need to create serializing class built off of an initializing function.
+The create_comment_serializer function builds a serializing class, and must return the class.
+    Set up the class, pass the necessary arguments for the function, *then initialize the class with those arguments w/ an __init__(self, *args, **kwargs) function, validate the data with a validate(self, data) function, finally use the validated_data to create the object(serialized object(e.g. comment)) with a create(self, validated_data) function.
+
+Mixins allow new methods into class-based views
+After importing the mixins into your view and subclassing your class-based views from the mixins, need to actually implement the methods for them under the views.
+
+e.g. def put() # The update method
+#def put() gives any APIView the 'put' method as an approved method for that view
+"""
+
+"""
+=User=
+Using Django's get_user_model() can do away with having to create a custom user model.
+Can do all the creating/validating in the serializers file.
+See: accounts/api/serializers.py
+
+"""
+
+"""
+
+"""

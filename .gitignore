@@ -8,7 +8,7 @@ bin/
 include/
 lib/
 pip-selfcheck.json
-src/notes.txt
+
 
 
 # Byte-compiled / optimized / DLL files
